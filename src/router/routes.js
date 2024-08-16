@@ -6,6 +6,11 @@ const routes = [
       { path: '', component: () => import('pages/IndexPage.vue') }
     ]
   },
+  {
+    path: '/stockPrice',
+    name: 'StockPrice',
+    component: () => import('pages/StockPrice.vue'),
+  },
 
   // Always leave this as last one,
   // but you can also remove it
