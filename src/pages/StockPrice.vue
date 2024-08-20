@@ -1,8 +1,4 @@
 <template>
-    <div class="flex">
-        
-        
-    </div>
     <div>
         <div class="container bg-grey-9">
             <q-card 
@@ -19,23 +15,23 @@
                 :loading="isLoading"
                 :pagination="pagination"
                 :visibleColumns="visibleColumns"
+                virtual-scroll
                 >
                     <template v-slot:top>
-                        <div class="flex">
-                            <ItemInput 
-                                v-model:value="stockId"
-                                class="bg-white q-mr-sm"
-                                name="stockId"
-                                label="stockId"
-                            />
-                            <q-btn color="primary q-mr-sm" label="送出" name="送出" value="送出"  @click="api.addStock(stockId)" />
-                            <q-space />
-                            
-                            <q-btn color="secondary q-mr-sm" label="刷新" name="刷新" value="刷新"  @click="api.refreshList()"/>
-
-                            <div v-if="$q.screen.gt.xs" class="">
+                        <div class="row inline col-12  justify-between">
+                            <div class="row col-6 justify-start">
+                                <ItemInput 
+                                    v-model:value="stockId"
+                                    class="bg-white q-mr-sm col-auto"
+                                    name="stockId"
+                                    label="stockId"
+                                />
+                                <q-btn class="col-auto" color="primary q-mr-sm w-4" label="送出" name="送出" value="送出"  @click="api.addStock(stockId)" />
+                                <q-btn class="col-auto" color="secondary q-mr-sm w-4" label="刷新" name="刷新" value="刷新"  @click="api.refreshList()"/>
+                            </div>
+                            <div class="row col-6 no-wrap">
                                 <template v-for="column in columns" :key="column.name">
-                                    <q-toggle v-model="visibleColumns"  :val="column.name" :label="column.label" />
+                                    <q-toggle v-model="visibleColumns"  :val="column.name" :label="column.label" class="col-auto" />
                                 </template>
                             </div>
                         </div>
@@ -44,17 +40,23 @@
                     <q-td :props="props" />
                     <template #body-cell-price="props">
                         <q-td :props="props">
-                            <q-badge :text-color="textColor('base', props.value, props.row.referencePrice)" :label="props.value" color="grey-9" />
+                            <transition
+                            appear
+                            enter-active-class="animated fadeIn slower"
+                            leave-active-class="animated fadeOut"
+                            >
+                                <q-badge class="shadow-10" text-color="white" :label="props.value" :color="textColor('base', props.value, props.row.referencePrice)" />
+                            </transition>
                         </q-td>
                     </template>
                     <template #body-cell-change="props">
                         <q-td :props="props">
-                            <q-badge :text-color="textColor('rate', props.value)" :label="props.value" color="grey-9"/>
+                            <q-badge class="shadow-10" text-color="white" :label="props.value" :color="textColor('rate', props.value)"/>
                         </q-td>
                     </template>
                     <template #body-cell-changePercent="props">
                         <q-td :props="props">
-                            <q-badge :text-color="textColor('rate', props.value)" :label="props.value" color="grey-9"/>
+                            <q-badge class="shadow-10" text-color="white" :label="props.value" :color="textColor('rate', props.value)"/>
                         </q-td>
                     </template>
                     <template v-slot:body-cell-actions="props">
@@ -63,7 +65,13 @@
                         </q-td>
                     </template>  
                     <template v-slot:loading>
-                        <q-inner-loading :showing="isLoading" color="primary" />
+                        <q-inner-loading 
+                        :showing="isLoading" 
+                        color="white"
+                        label="Please wait..."
+                        label-class="text-teal"
+                        label-style="font-size: 1.1em" 
+                        />
                     </template> 
                 </q-table>
             </q-card>
@@ -203,8 +211,8 @@
     }
 
     function textColor(type, value, base){
-        return  type === 'rate' ? Number(value) > 0 ? 'red' : Number(value) === 0 ? 'white' : 'green' 
-        :  Number(value) > Number(base) ? 'red' : Number(value) === Number(base) ? 'white' : 'green'
+        return  type === 'rate' ? Number(value) > 0 ? 'red' : Number(value) === 0 ? 'transparent' : 'green' 
+        :  Number(value) > Number(base) ? 'red' : Number(value) === Number(base) ? 'transparent' : 'green'
     }
 
 
