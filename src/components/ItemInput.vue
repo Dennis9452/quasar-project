@@ -9,7 +9,7 @@
     v-model="inputValue" 
     v-bind="$attrs"
     >
-        <template v-slot:append>
+        <template v-if="showSearch" v-slot:append>
             <q-icon name="search" />
         </template>
     </q-input>
@@ -29,6 +29,11 @@
         label: {
             type: String,
             required: true
+        },
+        showSearch: {
+            type: Boolean,
+            required: false,
+            default: true
         }
     })
 
