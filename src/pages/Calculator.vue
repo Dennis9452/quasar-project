@@ -30,7 +30,8 @@
         </div>
         
         <div class="q-my-md">
-            <q-btn color="primary" label="編輯用戶名稱" @click="openEditDialog" />
+            <q-btn :disable="isLock" color="primary" label="編輯用戶名稱" @click="openEditDialog" />
+            <q-btn color="warning" label="恢復上次狀態"  class='q-ml-md' @click="getPreviousState" />
         </div>
 
         <div class="w-full">
@@ -41,6 +42,7 @@
                 flat
                 bordered
                 hide-bottom
+                class="sticky-column-table q-mb-md"
             >
                 <template v-slot:body-cell="props">
                     <q-td :props="props">
@@ -70,7 +72,7 @@
                 <q-btn 
                 :disable="!isLock"
                 @click="reset"
-                class="q-mx-md half-width"
+                class="q-mx-md col-6 col-xs-2"
                 type="submit"
                 :color="!isLock ? 'grey-4' : 'primary'"
                 :class="{
@@ -83,7 +85,7 @@
                 <q-btn 
                 :disable="!isLock"
                 @click="calculateBalances"
-                class="q-mx-md half-width"
+                class="q-mx-md"
                 type="submit"
                 :color="!isLock ? 'grey-4' : 'primary'"
                 :class="{
@@ -124,12 +126,19 @@
                 </tbody>
             </table> -->
         </div>
-        <h2>Net Balances</h2>
-        <ul>
-            <li v-for="(balance, index) in balances" :key="index">
-                {{ users[index] }}: {{ balance }}
-            </li>
-        </ul>
+        <h4>餘額</h4>
+        <div class="row q-col-gutter-md">
+            <div 
+            class="col-lg-3 col-xs-6"  
+            v-for="(balance, index) in balances" :key="index">
+                <q-card class="text-center" :style="{ 'background-color': balance > 1000 ? '#e06c75' : balance === 1000 ? '#f1ece1' : '#98c379' }">
+                    <q-card-section>
+                        <div class="text-h6">{{ users[index] }}</div>
+                        <div class="text-h8">{{ balance }}</div>
+                    </q-card-section>
+                </q-card>
+            </div>
+        </div>
     </div>
     <!-- 編輯用戶名稱的對話框 -->
     <q-dialog v-model="editDialog">
@@ -169,12 +178,14 @@ export default {
 
     const users = ref(["User 1", "User 2", "User 3", "User 4"])
     const isLock = ref(false)
+    const isInit = ref(true)
     const tempUsers = ref([])
     const editDialog = ref(false)
     const options = ref(['屁胡', ...Array.from({ length: 10 }, (_, i) => i + 1)])
     const columns = computed(() => {
         const col = [{
                 id: 0,
+                align: 'left',
                 name: 'id',
                 align: 'center', 
                 label: '玩家', 
@@ -197,9 +208,7 @@ export default {
     const balances = ref([1000, 1000, 1000, 1000])
 
     const saveUserNames = () => {
-        console.log(users.value)
         users.value = tempUsers.value
-        console.log(users.value)
     }
 
     const openEditDialog = () => {
@@ -208,6 +217,9 @@ export default {
     }
 
     const calculateBalances = () => {
+        isInit.value = false
+        localStorage.setItem('previousTransactions', JSON.stringify(transactions.value))
+        localStorage.setItem('previousBalances', JSON.stringify(balances.value))
         // 只遍历上半部分的交易记录，避免重复计算
         for(let i = 0; i < users.value.length; i++) {
             for(let j = 0; j < users.value.length; j++) {
@@ -240,6 +252,7 @@ export default {
         return row
     }
     const reset = () => {
+        isInit.value = true
         transactions.value = resetTransactions()
         balances.value = [1000, 1000, 1000, 1000]
     }
@@ -249,7 +262,21 @@ export default {
             return
         }
     }
+    const getPreviousState = () => {
+        console.log('getPreviousState', localStorage)
+        const previousTransactions = localStorage.getItem('previousTransactions')
+        const previousBalances = localStorage.getItem('previousBalances')
+        transactions.value = JSON.parse(previousTransactions)
+        balances.value = JSON.parse(previousBalances)
+    }
+
+    const init = () => {
+        reset()
+        localStorage.setItem('previousTransactions', JSON.stringify(transactions.value))
+        localStorage.setItem('previousBalances', JSON.stringify(balances.value))
+    }
     
+    init()
     watch(users, () => {
         const row = []
         for(let i = 0; i < users.value.length; i++) {
@@ -267,14 +294,28 @@ export default {
 
 </script>
 
-<style scoped>
-table {
-    margin-bottom: 20px;
-    border-collapse: collapse;
-    width: 100%;
-}
+<style lang="scss">
+.sticky-column-table {
+  /* specifying max-width so the example can
+    highlight the sticky column on any browser window */
+  thead tr {
+    background-color: #8eaca7c9;
+  }
 
-button {
-    /* margin-bottom: 20px; */
+  thead tr:first-child th:first-child {
+    /* bg color is important for th; just specify one */
+    background-color: #71807d;
+  }
+
+  td:first-child {
+    background-color: #b9b9b9;
+  }
+
+  th:first-child,
+  td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
 }
 </style>
